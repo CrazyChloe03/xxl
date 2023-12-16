@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            gap: 5px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #score {
+            margin-top: 20px;
+        }
+    </style>
+    <title>消消乐游戏</title>
+</head>
+<body>
+    <h1>消消乐游戏</h1>
+    <div id="game-board"></div>
+    <div id="score">Score: <span id="score-value">0</span></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const rows = 8;
+            const cols = 8;
+            const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00']; // 可自定义颜色
+            let board = [];
+            let score = 0;
+
+            // 初始化游戏板
+            function initBoard() {
+                for (let i = 0; i < rows; i++) {
+                    board[i] = [];
+                    for (let j = 0; j < cols; j++) {
+                        board[i][j] = getRandomColor();
+                    }
+                }
+            }
+
+            // 随机获取颜色
+            function getRandomColor() {
+                const randomIndex = Math.floor(Math.random() * colors.length);
+                return colors[randomIndex];
+            }
+
+            // 渲染游戏板
+            function renderBoard() {
+                const gameBoard = document.getElementById('game-board');
+                gameBoard.innerHTML = '';
+
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = i;
+                        cell.dataset.col = j;
+                        cell.style.backgroundColor = board[i][j];
+                        cell.addEventListener('click', handleCellClick);
+                        gameBoard.appendChild(cell);
+                    }
+                }
+            }
+
+            // 处理点击事件
+            function handleCellClick(event) {
+                const clickedCell = event.target;
+                const row = parseInt(clickedCell.dataset.row);
+                const col = parseInt(clickedCell.dataset.col);
+
+                // 判断相邻颜色是否相同，若相同则消除
+                if (isAdjacentColorMatch(row, col)) {
+                    eliminateConnectedColors(row, col, board[row][col]);
+                    updateScore();
+                    renderBoard();
+                }
+            }
+
+            // 判断相邻颜色是否相同
+            function isAdjacentColorMatch(row, col) {
+                const currentColor = board[row][col];
+
+                // Check left
+                if (col > 0 && board[row][col - 1] === currentColor) {
+                    return true;
+                }
+
+                // Check right
+                if (col < cols - 1 && board[row][col + 1] === currentColor) {
+                    return true;
+                }
+
+                // Check up
+                if (row > 0 && board[row - 1][col] === currentColor) {
+                    return true;
+                }
+
+                // Check down
+                if (row < rows - 1 && board[row + 1][col] === currentColor) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            // 消除相邻相同颜色
+            function eliminateConnectedColors(row, col, targetColor) {
+                if (board[row][col] === targetColor) {
+                    board[row][col] = 'transparent';
+
+                    // Check left
+                    if (col > 0 && board[row][col - 1] === targetColor) {
+                        eliminateConnectedColors(row, col - 1, targetColor);
+                    }
+
+                    // Check right
+                    if (col < cols - 1 && board[row][col + 1] === targetColor) {
+                        eliminateConnectedColors(row, col + 1, targetColor);
+                    }
+
+                    // Check up
+                    if (row > 0 && board[row - 1][col] === targetColor) {
+                        eliminateConnectedColors(row - 1, col, targetColor);
+                    }
+
+                    // Check down
+                    if (row < rows - 1 && board[row + 1][col] === targetColor) {
+                        eliminateConnectedColors(row + 1, col, targetColor);
+                    }
+                }
+            }
+
+            // 更新得分
+            function updateScore() {
+                score += 10; // 每次消除得10分，可根据实际情况调整
+                document.getElementById('score-value').textContent = score;
+            }
+
+            // 启动游戏
+            function startGame() {
+                initBoard();
+                renderBoard();
+            }
+
+            startGame();
+        });
+    </script>
+</body>
+</html>
